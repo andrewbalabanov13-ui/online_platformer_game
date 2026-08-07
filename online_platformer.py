@@ -183,7 +183,7 @@ def check_if_colliding_y(world):
 
 def move_player(world):
     global player_float_x, player_float_y
-    
+
     player_float_x += speed_x
     player_rect.x = int(player_float_x)
     check_if_colliding_x(world)
@@ -265,7 +265,7 @@ def main():
             if socket_buffer > SEND_TICKS:
                 socket_buffer = 0
 
-                message = struct.pack("!III",int(player_float_x),int(player_float_y),client_id)
+                message = struct.pack("!III",max(1,int(player_float_x)),max(1,int(player_float_y)),client_id)
 
                 connection.sendall(message)
                 # print("sent")
