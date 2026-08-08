@@ -1,7 +1,8 @@
 import socket
 import threading
 
-PUBLIC_IP = "172.19.0.57"
+COMPUTER_IP = "172.16.0.0"
+PUBLIC_IP = "192.168.1.133"
 HOST = "25.0.141.101"
 PORT = 443
 
@@ -29,7 +30,7 @@ def main():
     connection_lock = threading.Lock()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((HOST,PORT))
+        server.bind((PUBLIC_IP,PORT))
         server.listen()
 
         print("listening")

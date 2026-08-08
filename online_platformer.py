@@ -6,9 +6,10 @@ import threading
 import struct
 import random
 import time
+
 OTHER_PLAYERS = {}
 
-SERVER_HOST = "25.0.141.101"
+SERVER_HOST = "192.168.1.133"
 SERVER_PORT = 443
 
 SEND_TICKS = 4
@@ -19,6 +20,8 @@ GRID_X = 40
 GRID_Y = 30
 LEVEL = 0
 DATA_FILE = "level_data.txt"
+
+GROUNDED = True
 
 WIDTH = 480
 HEIGHT = 360
@@ -45,7 +48,6 @@ player_float_y = 0.0
 
 speed_x = 0
 speed_y = 0
-frame = 0
 
 screen = pygame.display.set_mode((WIDTH,HEIGHT))
 
@@ -160,7 +162,7 @@ def check_if_colliding_x(world):
         r += 1
 
 def check_if_colliding_y(world):
-    global speed_y, frame, player_float_y
+    global speed_y, player_float_y, GROUNDED
     r = 0
     for row in world:
         c = 0
@@ -168,29 +170,36 @@ def check_if_colliding_y(world):
             if wall == "w":
                 tile_rect = pygame.Rect(c*TILE_GRID_SIZE, r*TILE_GRID_SIZE, TILE_GRID_SIZE, TILE_GRID_SIZE)
                 if player_rect.colliderect(tile_rect):
+                    GROUNDED = True
                     if speed_y > 0: 
                         player_rect.bottom = tile_rect.top
-                        frame = 0
                         speed_y = 0
                     elif speed_y < 0: 
                         player_rect.top = tile_rect.bottom
-                        frame = 99
+                        GROUNDED = False
                         speed_y = 0
                     player_float_y = float(player_rect.y)
                     return 
             c += 1
         r += 1
-
+    GROUNDED = False
 def move_player(world):
     global player_float_x, player_float_y
 
     player_float_x += speed_x
     player_rect.x = int(player_float_x)
     check_if_colliding_x(world)
-
+    if player_rect.left < 0:
+        player_rect.left = 0
+    if player_rect.right > WIDTH:
+        player_rect.right = WIDTH
     player_float_y += speed_y
     player_rect.y = int(player_float_y)
     check_if_colliding_y(world)
+    if player_rect.top < 0:
+        player_rect.top = 0
+    if player_rect.bottom > HEIGHT:
+        player_rect.bottom = HEIGHT
 
 def thread_handle(conn):
     try:
@@ -199,12 +208,12 @@ def thread_handle(conn):
             while True:
                 data = conn.recv(1024)
                 data_recieved.extend(data)
-                if len(data_recieved) >= 12:
+                if len(data_recieved) >= 16:
                     break
 
-            x,y,other_id = struct.unpack_from("!III", data_recieved, offset=0)
+            x,y,other_id,LEVEL = struct.unpack_from("!IIII", data_recieved, offset=0)
 
-            OTHER_PLAYERS[other_id]=(x,y,time.time())
+            OTHER_PLAYERS[other_id]=(x,y,time.time(),LEVEL)
 
             print("recieved")
 
@@ -216,7 +225,7 @@ def thread_handle(conn):
     
 
 def main():
-    global speed_x, speed_y, frame
+    global speed_x, speed_y, GROUNDED
     
     socket_buffer = 0
 
@@ -253,11 +262,12 @@ def main():
                 speed_x += SPEED
 
             speed_y += 0.4
-            frame += 1
 
             if keys[pygame.K_UP] or keys[pygame.K_w]:
-                if frame < 4:
-                    speed_y = -4.5
+                if GROUNDED:
+                    speed_y = -5.4
+                    GROUNDED = False
+
 
             move_player(world)
             draw(world)
@@ -265,18 +275,19 @@ def main():
             if socket_buffer > SEND_TICKS:
                 socket_buffer = 0
 
-                message = struct.pack("!III",max(1,int(player_float_x)),max(1,int(player_float_y)),client_id)
+                message = struct.pack("!IIII",max(1,int(player_float_x)),max(1,int(player_float_y)),client_id,LEVEL)
 
                 connection.sendall(message)
                 # print("sent")
             remove_key = []
-            for other_id, (x,y,t) in OTHER_PLAYERS.items():
+            for other_id, (x,y,t,l) in OTHER_PLAYERS.items():
                 if time.time() - t > 10:
                     remove_key.append(other_id)
                     print('added')
-                color_data = other_id.to_bytes(4, byteorder="little")
-                color = (color_data[0], color_data[1], color_data[2])
-                pygame.draw.rect(screen,color,(x,y,TILE_GRID_SIZE,TILE_GRID_SIZE))
+                if l == LEVEL:
+                    color_data = other_id.to_bytes(4, byteorder="little")
+                    color = (color_data[0], color_data[1], color_data[2])
+                    pygame.draw.rect(screen,color,(x,y,TILE_GRID_SIZE,TILE_GRID_SIZE))
             
             for remove_id in remove_key:
                 del OTHER_PLAYERS[remove_id]
