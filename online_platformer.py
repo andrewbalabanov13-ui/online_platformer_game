@@ -215,7 +215,6 @@ def thread_handle(conn):
 
             OTHER_PLAYERS[other_id]=(x,y,time.time(),LEVEL)
 
-            print("recieved")
 
     except (ConnectionResetError, BrokenPipeError, OSError) as error:
         print("connection lost")
