@@ -184,23 +184,40 @@ def check_if_colliding_y(world):
         r += 1
     GROUNDED = False
 def move_player(world):
-    global player_float_x, player_float_y
+    global player_float_x, player_float_y, GROUNDED, speed_y
 
+    # Horizontal movement
     player_float_x += speed_x
-    player_rect.x = int(player_float_x)
+    player_rect.x = round(player_float_x)
+
     check_if_colliding_x(world)
+
+    # Screen boundaries
     if player_rect.left < 0:
         player_rect.left = 0
-    if player_rect.right > WIDTH:
+        player_float_x = float(player_rect.x)
+
+    elif player_rect.right > WIDTH:
         player_rect.right = WIDTH
+        player_float_x = float(player_rect.x)
+
+    # Vertical movement
     player_float_y += speed_y
-    player_rect.y = int(player_float_y)
+    player_rect.y = round(player_float_y)
+
     check_if_colliding_y(world)
+
+    # Screen boundaries
     if player_rect.top < 0:
         player_rect.top = 0
-    if player_rect.bottom > HEIGHT:
+        player_float_y = float(player_rect.y)
+
+    elif player_rect.bottom > HEIGHT:
         player_rect.bottom = HEIGHT
+        player_float_y = float(player_rect.y)
+        speed_y = 0
         GROUNDED = True
+
 def thread_handle(conn):
     try:
         while True:
