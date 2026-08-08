@@ -51,7 +51,10 @@ def main():
                 if time.time() - previous_connection[client_ip] < 10:
                     deny_connection = True
                     previous_connection[client_ip] = time.time()
-
+            
+            if deny_connection:
+                conn.close()
+            
             if not deny_connection:
                 previous_connection[address[0]]=time.time()
                 thread = threading.Thread(target=thread_handle,args=(conn,address,connection_lock,connections),daemon=True)

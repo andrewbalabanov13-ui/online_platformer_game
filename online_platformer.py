@@ -8,6 +8,7 @@ import random
 import time
 
 OTHER_PLAYERS = {}
+OTHER_PLAYERS_LOCK = threading.Lock()
 
 SERVER_HOST = "192.168.1.133"
 SERVER_PORT = 443
@@ -219,25 +220,42 @@ def move_player(world):
         GROUNDED = True
 
 def thread_handle(conn):
+    global server_connected
+
+    buffer = bytearray()
+
     try:
         while True:
-            data_recieved = bytearray()
-            while True:
-                data = conn.recv(1024)
-                data_recieved.extend(data)
-                if len(data_recieved) >= 16:
-                    break
+            data = conn.recv(1024)
 
-            x,y,other_id,LEVEL = struct.unpack_from("!IIII", data_recieved, offset=0)
+            if not data:
+                print("server disconnected")
+                break
 
-            OTHER_PLAYERS[other_id]=(x,y,time.time(),LEVEL)
+            buffer.extend(data)
 
+            while len(buffer) >= 16:
+                x, y, other_id, other_level = struct.unpack_from(
+                    "!IIII",
+                    buffer,
+                    0
+                )
+                del buffer[:16]
+
+                with OTHER_PLAYERS_LOCK:
+                    OTHER_PLAYERS[other_id] = (
+                        x,
+                        y,
+                        time.time(),
+                        other_level
+                    )
 
     except (ConnectionResetError, BrokenPipeError, OSError) as error:
-        print("connection lost")
+        print(f"connection lost: {error}")
 
     finally:
-        conn.close()
+        server_connected = False
+        print("network thread stopped")
     
 
 def main():
