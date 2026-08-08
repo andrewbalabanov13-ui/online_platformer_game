@@ -30,7 +30,7 @@ def main():
     connection_lock = threading.Lock()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((PUBLIC_IP,PORT))
+        server.bind(("",PORT))
         server.listen()
 
         print("listening")
