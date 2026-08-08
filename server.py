@@ -44,11 +44,13 @@ def main():
                 for other_adress, other_con in connections.items():
                     if other_adress[0] == address[0]:
                         deny_connection = True
+                        
             client_ip = address[0]
 
             if client_ip in previous_connection:
                 if time.time() - previous_connection[client_ip] < 10:
                     deny_connection = True
+                    previous_connection[client_ip] = time.time()
 
             if not deny_connection:
                 previous_connection[address[0]]=time.time()
