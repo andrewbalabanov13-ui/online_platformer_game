@@ -200,7 +200,7 @@ def move_player(world):
         player_rect.top = 0
     if player_rect.bottom > HEIGHT:
         player_rect.bottom = HEIGHT
-
+        GROUNDED = True
 def thread_handle(conn):
     try:
         while True:
