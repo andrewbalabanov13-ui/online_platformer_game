@@ -39,18 +39,18 @@ GRAY = (128, 128, 128)
 
 
 TILE_GRID_SIZE = WIDTH / GRID_X  # Evaluates to 12
+if __name__ == "__main__":
+    clock = pygame.time.Clock()
 
-clock = pygame.time.Clock()
+    player_rect = pygame.Rect(-1,-1,TILE_GRID_SIZE,TILE_GRID_SIZE)
 
-player_rect = pygame.Rect(-1,-1,TILE_GRID_SIZE,TILE_GRID_SIZE)
+    player_float_x = 0.0
+    player_float_y = 0.0
 
-player_float_x = 0.0
-player_float_y = 0.0
+    speed_x = 0
+    speed_y = 0
 
-speed_x = 0
-speed_y = 0
-
-screen = pygame.display.set_mode((WIDTH,HEIGHT))
+    screen = pygame.display.set_mode((WIDTH,HEIGHT))
 
 def ensure_file_exists():
     if not os.path.exists(DATA_FILE):
@@ -317,7 +317,6 @@ def main():
             for other_id, (x,y,t,l) in OTHER_PLAYERS.items():
                 if time.time() - t > 10:
                     remove_key.append(other_id)
-                    print('added')
                 if l == LEVEL:
                     color_data = other_id.to_bytes(4, byteorder="little")
                     color = (color_data[0], color_data[1], color_data[2])
@@ -330,4 +329,5 @@ def main():
             pygame.display.flip()
 
             clock.tick(60)
-main()
+if __name__ == "__main__":
+    main()
