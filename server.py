@@ -19,7 +19,7 @@ def check_legitimacy_of_packet(x, y, other_id, other_level):
         return False
 
 def anti_cheat(x,y,this_id,level,previous_data,address):
-    level_change_check = False
+    level_change_or_reset_check = False
     if address not in previous_data:
         return True
     

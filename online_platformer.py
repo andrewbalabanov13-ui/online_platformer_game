@@ -294,7 +294,7 @@ def main():
             keys = pygame.key.get_pressed()
             speed_x = 0
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-                speed_x -= SPEED
+                speed_x -= 3
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 speed_x += SPEED
 
