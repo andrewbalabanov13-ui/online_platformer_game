@@ -287,6 +287,9 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        set_spawnpoint(world)
             
             keys = pygame.key.get_pressed()
             speed_x = 0
